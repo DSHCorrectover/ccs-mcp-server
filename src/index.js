@@ -32,7 +32,7 @@ const receipts = require("./receipts");
 // CCS Verifier Core (pure stdlib Node.js)
 // ---------------------------------------------------------------------------
 
-const CCS_VERSION = "1.2.12";
+const CCS_VERSION = "1.2.13";
 
 const DEFAULT_POLICY = {
   mode: "block",
