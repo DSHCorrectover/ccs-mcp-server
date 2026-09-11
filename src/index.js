@@ -431,10 +431,31 @@ function verifyIntentBinding(intent, toolName, toolArgs, now = Date.now()) {
 const PROTOCOL_VERSION = "2024-11-05";
 const SERVER_INFO = { name: "ccs-runtime-evidence", version: CCS_VERSION, title: "CCS Runtime Evidence" };
 
+// MCP tool annotations (spec 2024-11-05+). Hints describe the tool's real
+// runtime behaviour so clients/registries can drive consent, UI gating and
+// safety review. All five tools are local, pure verification/analysis
+// operations: no network calls, no writes to caller-owned resources. The
+// only filesystem activity in this process is one-time Ed25519 keypair
+// provisioning under ~/.ccs at first sign (never overwrites existing keys),
+// which is local bootstrap plumbing, not a tool effect on external state.
 const TOOLS = [
   {
     name: "verify_tool_call",
+    title: "Verify tool call (CCS 7-dimension)",
     description: "Verify an AI agent tool call against CCS 7 dimensions (Structure, Schema, Security, Identity, Integrity, Latency, Cost) plus semantic attack-chain analysis and math overflow detection. Returns verdict (allowed/denied) with detailed findings. DEFAULT MODE BLOCKS UNSAFE CALLS.",
+    // readOnly: pure local computation (regex/structural checks, hashing,
+    // Ed25519 signing of a returned object); mutates no external state.
+    // destructive: never deletes/overwrites anything.
+    // idempotent: verdict/dimensions are deterministic for given input+policy;
+    //   safe to retry (only receipt id/timestamp differ, no side effects).
+    // openWorld: fully offline; stdio-local crypto, no network or external
+    //   entities are contacted.
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
     inputSchema: {
       type: "object",
       properties: {
@@ -450,7 +471,23 @@ const TOOLS = [
   },
   {
     name: "issue_evidence",
+    title: "Issue signed CCS evidence receipt",
     description: "Issue a CCS evidence record for a tool call. Evidence is cryptographically bound (content_hash + evidence_hash), tamper-evident, independently verifiable. Issued for allowed AND denied calls.",
+    // readOnly: the signed receipt is returned in the response; the server
+    //   does NOT persist/append receipts anywhere, so no caller-visible
+    //   resource is modified (first-sign key provisioning is local bootstrap,
+    //   never overwrites existing keys).
+    // destructive: creates nothing destructively; no overwrite/delete.
+    // idempotent: same call+policy always yields the same verdict/hashes; the
+    //   only varying fields are receipt id/issued_at and there are no
+    //   accumulating side effects, so safe to retry/auto-approve.
+    // openWorld: offline signing, no network access.
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
     inputSchema: {
       type: "object",
       properties: {
@@ -465,7 +502,19 @@ const TOOLS = [
   },
   {
     name: "audit_mcp_config",
+    title: "Audit MCP configuration for security risks",
     description: "Audit an MCP client/server configuration JSON for security risks: plain HTTP, weak secrets, disabled TLS, missing commands. Returns structured issues with severity.",
+    // readOnly: purely static analysis of the passed-in config object;
+    //   nothing is executed, connected to, or written.
+    // destructive: false. idempotent: same config -> identical report.
+    // openWorld: the server never fetches the configured URLs; it inspects
+    //   the JSON text offline, so it is closed-world.
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
     inputSchema: {
       type: "object",
       properties: {
@@ -476,7 +525,18 @@ const TOOLS = [
   },
   {
     name: "verify_intent_binding",
+    title: "Verify intent-to-arguments binding (L4)",
     description: "Verify that actual tool call arguments match a declared intent with zero tolerance. Catches cross-model parameter drift (planner says amount=100, executor writes amount=10000). No LLM needed — pure deterministic comparison. Supports exact match, numeric tolerance, and regex pattern binding modes.",
+    // readOnly: deterministic field-by-field comparison + hashing + signing;
+    //   returns the binding verdict without touching any resource.
+    // destructive: false. idempotent: deterministic verdict, safe to retry.
+    // openWorld: fully offline local crypto and comparison.
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
     inputSchema: {
       type: "object",
       properties: {
@@ -514,7 +574,19 @@ const TOOLS = [
   },
   {
     name: "verify_receipt",
+    title: "Offline-verify a CCS signed receipt",
     description: "Offline-verify a CCS Ed25519-signed receipt. Auditors call this with a receipt JSON produced by issue_evidence or verify_intent_binding; it checks the signature against the embedded signer_public_key and reports whether the body was tampered with. Optionally pin an expected signer public key (PEM string or sha256: fingerprint) to reject receipts from untrusted signers.",
+    // readOnly: cryptographic verification only (crypto.verify on in-memory
+    //   data); no state change.
+    // destructive: false. idempotent: same receipt/pin -> same verdict.
+    // openWorld: explicitly offline verification; trusts only the embedded
+    //   public key (or a caller-pinned key), fetches nothing.
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
     inputSchema: {
       type: "object",
       properties: {
