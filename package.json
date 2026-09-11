@@ -1,6 +1,6 @@
 {
   "name": "ccs-mcp-server",
-  "version": "1.2.13",
+  "version": "1.2.14",
   "description": "CCS Runtime Evidence MCP Server — 7-dimension runtime verification for AI agent tool calls. Ed25519 receipts, sub-ms OOP, zero deps. For Claude Desktop, Cursor, Windsurf.",
   "type": "commonjs",
   "bin": {

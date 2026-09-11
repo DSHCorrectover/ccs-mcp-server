@@ -473,19 +473,18 @@ const TOOLS = [
     name: "issue_evidence",
     title: "Issue signed CCS evidence receipt",
     description: "Issue a CCS evidence record for a tool call. Evidence is cryptographically bound (content_hash + evidence_hash), tamper-evident, independently verifiable. Issued for allowed AND denied calls.",
-    // readOnly: the signed receipt is returned in the response; the server
-    //   does NOT persist/append receipts anywhere, so no caller-visible
-    //   resource is modified (first-sign key provisioning is local bootstrap,
-    //   never overwrites existing keys).
-    // destructive: creates nothing destructively; no overwrite/delete.
-    // idempotent: same call+policy always yields the same verdict/hashes; the
-    //   only varying fields are receipt id/issued_at and there are no
-    //   accumulating side effects, so safe to retry/auto-approve.
-    // openWorld: offline signing, no network access.
+    // readOnly: false — first call provisions a new Ed25519 keypair under
+    //   ~/.ccs (persistent state write), which modifies the local environment;
+    //   we mark this conservatively even though the write is one-time.
+    // destructive: false — keypair bootstrap never overwrites or deletes
+    //   existing state; receipts are returned, never appended to a store.
+    // idempotent: false — each issuance carries a fresh receipt id and
+    //   issued_at timestamp, so repeated calls produce distinct records.
+    // openWorld: false — offline signing, no network access.
     annotations: {
-      readOnlyHint: true,
+      readOnlyHint: false,
       destructiveHint: false,
-      idempotentHint: true,
+      idempotentHint: false,
       openWorldHint: false,
     },
     inputSchema: {

@@ -6,12 +6,12 @@
         "url": "https://github.com/DSHCorrectover/ccs-mcp-server",
         "source": "github"
     },
-    "version": "1.2.13",
+    "version": "1.2.14",
     "packages": [
         {
             "registryType": "npm",
             "identifier": "ccs-mcp-server",
-            "version": "1.2.13",
+            "version": "1.2.14",
             "transport": {
                 "type": "stdio"
             }
