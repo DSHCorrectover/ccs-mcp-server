@@ -1,0 +1,24 @@
+name: correctover-security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  correctover:
+    name: Agent / MCP runtime security gate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Correctover security scan
+        uses: DSHCorrectover/correctover-action@v1
+        with:
+          target: src
+          mode: bundle
+          fail-on: error
+          upload-sarif: 'true'
