@@ -125,6 +125,18 @@ Receipts are Ed25519-signed and JSON-based: verify them offline with the built-i
 - **Complements**: [VAP draft-samal-vap-00](https://datatracker.ietf.org/doc/draft-samal-vap/) (scope/budget/purpose), [Microsoft ACS](https://github.com/microsoft/agent-governance-toolkit) (policy decisions), AP2 (human authorization)
 - **Does not replace**: authentication, payment networks, policy engines
 
+## Commercial Support
+
+We work with teams shipping autonomous agents to production. Engagement is by
+email only — no calls.
+
+- **Production integration** — embedding the fail-closed CCS enforcement layer into your agent runtime or gateway
+- **Custom enforcement** — tool-specific policies, intent binding, and allow/deny/escalate rule sets for your stack
+- **Conformance & audit** — running the [CCS conformance benchmark](https://github.com/DSHCorrectover/ccs-conformance-vectors) and producing an Ed25519-signed audit trail for compliance review
+
+Scope and pricing are quoted per project after a short email scoping exchange.
+Contact: **wangguigui@correctover.com**.
+
 ## Links
 
 - npm: https://www.npmjs.com/package/ccs-mcp-server
